@@ -1,24 +1,6 @@
-import React, { useEffect, useMemo, useRef, useState, Suspense } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { motion, useScroll, useTransform } from 'framer-motion'
-
-// Lazy-load Spline so a failure doesn't crash the whole app
-const LazySpline = React.lazy(() => import('@splinetool/react-spline').then(mod => ({ default: mod.default || mod })))
-
-// Simple Error Boundary to protect the UI if Spline or any section fails
-class ErrorBoundary extends React.Component {
-  constructor(props) {
-    super(props)
-    this.state = { hasError: false }
-  }
-  static getDerivedStateFromError() { return { hasError: true } }
-  componentDidCatch(err) { console.error('Render error:', err) }
-  render() {
-    if (this.state.hasError) {
-      return this.props.fallback ?? null
-    }
-    return this.props.children
-  }
-}
+import SplineHero from './components/SplineHero'
 
 // Utility: reveal on scroll
 function useInViewAnimation(threshold = 0.2) {
@@ -60,7 +42,7 @@ function CountUp({ target, duration = 1600, prefix = '', suffix = '', decimals =
     return () => cancelAnimationFrame(raf)
   }, [inView, target, duration])
 
-  const formatted = useMemo(() => {
+  const formatted = React.useMemo(() => {
     const factor = Math.pow(10, decimals)
     const rounded = Math.round(value * factor) / factor
     if (decimals > 0) return `${prefix}${rounded.toLocaleString(undefined, { minimumFractionDigits: decimals, maximumFractionDigits: decimals })}${suffix}`
@@ -73,10 +55,10 @@ function CountUp({ target, duration = 1600, prefix = '', suffix = '', decimals =
 }
 
 export default function App() {
-  // Parallax for 3D hero element
+  // Parallax for subtle content motions
   const { scrollYProgress } = useScroll({ container: undefined })
-  const rotate = useTransform(scrollYProgress, [0, 1], [0, 6])
-  const y = useTransform(scrollYProgress, [0, 1], [0, -40])
+  const rotate = useTransform(scrollYProgress, [0, 1], [0, 3])
+  const y = useTransform(scrollYProgress, [0, 1], [0, -20])
 
   const services = useMemo(
     () => [
@@ -155,14 +137,10 @@ export default function App() {
           {/* Right 40% 3D sculpture */}
           <div className="md:col-span-5 relative">
             <motion.div style={{ rotate, y }} className="relative h-[420px] sm:h-[500px] md:h-[580px]">
-              <div className="absolute inset-0 rounded-xl shadow-elevate-lg overflow-hidden bg-sage/10">
-                {/* Spline 3D element with safe fallback */}
-                <ErrorBoundary fallback={<div className="w-full h-full bg-sage/20" /> }>
-                  <Suspense fallback={<div className="w-full h-full bg-sage/20" /> }>
-                    <LazySpline scene="https://prod.spline.design/5mJ0u7bH9v1P4k1m/scene.splinecode" style={{ width: '100%', height: '100%' }} />
-                  </Suspense>
-                </ErrorBoundary>
-              </div>
+              <SplineHero
+                scene="https://prod.spline.design/5mJ0u7bH9v1P4k1m/scene.splinecode"
+                className="absolute inset-0"
+              />
             </motion.div>
           </div>
         </div>
