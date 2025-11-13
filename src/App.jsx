@@ -1,6 +1,24 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState, Suspense } from 'react'
 import { motion, useScroll, useTransform } from 'framer-motion'
-import Spline from '@splinetool/react-spline'
+
+// Lazy-load Spline so a failure doesn't crash the whole app
+const LazySpline = React.lazy(() => import('@splinetool/react-spline').then(mod => ({ default: mod.default || mod })))
+
+// Simple Error Boundary to protect the UI if Spline or any section fails
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props)
+    this.state = { hasError: false }
+  }
+  static getDerivedStateFromError() { return { hasError: true } }
+  componentDidCatch(err) { console.error('Render error:', err) }
+  render() {
+    if (this.state.hasError) {
+      return this.props.fallback ?? null
+    }
+    return this.props.children
+  }
+}
 
 // Utility: reveal on scroll
 function useInViewAnimation(threshold = 0.2) {
@@ -53,21 +71,8 @@ function CountUp({ target, duration = 1600, prefix = '', suffix = '' }) {
   )
 }
 
-function SectionHeader({ kicker, script, align = 'left', light = false }) {
-  return (
-    <div className={`space-y-2 ${align === 'center' ? 'text-center' : ''}`}>
-      <h2 className={`font-serif tracking-widest text-[11px] sm:text-xs leading-none ${light ? 'text-cream/90' : 'text-chocolate/80'}`}>{kicker}</h2>
-      <h3 className={`font-serif text-chocolate ${light ? 'text-cream' : 'text-chocolate'} text-3xl sm:text-4xl md:text-5xl font-bold uppercase`}>{kicker === ' ' ? '' : ''}</h3>
-      {script && (
-        <div className={`-mt-5 sm:-mt-6 ${light ? 'text-sage' : 'text-sage'} font-script text-2xl sm:text-3xl`}>{script}</div>
-      )}
-    </div>
-  )
-}
-
 export default function App() {
   // Parallax for 3D hero element
-  const containerRef = useRef(null)
   const { scrollYProgress } = useScroll({ container: undefined })
   const rotate = useTransform(scrollYProgress, [0, 1], [0, 6])
   const y = useTransform(scrollYProgress, [0, 1], [0, -40])
@@ -126,8 +131,12 @@ export default function App() {
           <div className="md:col-span-5 relative">
             <motion.div style={{ rotate, y }} className="relative h-[380px] sm:h-[440px] md:h-[520px]">
               <div className="absolute inset-0 rounded-xl shadow-elevate-lg overflow-hidden">
-                {/* Spline 3D element */}
-                <Spline scene="https://prod.spline.design/5mJ0u7bH9v1P4k1m/scene.splinecode" style={{ width: '100%', height: '100%' }} />
+                {/* Spline 3D element with safe fallback */}
+                <ErrorBoundary fallback={<div className="w-full h-full bg-sage/30" /> }>
+                  <Suspense fallback={<div className="w-full h-full bg-sage/20" /> }>
+                    <LazySpline scene="https://prod.spline.design/5mJ0u7bH9v1P4k1m/scene.splinecode" style={{ width: '100%', height: '100%' }} />
+                  </Suspense>
+                </ErrorBoundary>
               </div>
             </motion.div>
           </div>
@@ -280,9 +289,13 @@ export default function App() {
             <a href="#work" className="text-sage underline decoration-cherry/0 hover:decoration-cherry transition-colors">View Our Work</a>
           </div>
         </div>
-        {/* Simplified 3D signature */}
+        {/* Simplified 3D signature with safe fallback */}
         <div className="absolute right-6 bottom-6 w-40 h-28 opacity-60">
-          <Spline scene="https://prod.spline.design/5mJ0u7bH9v1P4k1m/scene.splinecode" style={{ width: '100%', height: '100%' }} />
+          <ErrorBoundary fallback={<div className="w-full h-full bg-sage/20" />}>
+            <Suspense fallback={<div className="w-full h-full bg-sage/10" />}>
+              <LazySpline scene="https://prod.spline.design/5mJ0u7bH9v1P4k1m/scene.splinecode" style={{ width: '100%', height: '100%' }} />
+            </Suspense>
+          </ErrorBoundary>
         </div>
       </section>
 
