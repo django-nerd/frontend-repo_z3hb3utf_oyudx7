@@ -18,6 +18,28 @@
   }
 }
 
+/* Premium material system */
+@layer components {
+  /* Soft ambient elevation (paper on cream) */
+  .shadow-elevate {
+    box-shadow: 0 6px 18px rgba(41,5,2,0.08), 0 1px 2px rgba(41,5,2,0.06);
+  }
+  .shadow-elevate-md {
+    box-shadow: 0 10px 28px rgba(41,5,2,0.10), 0 2px 6px rgba(41,5,2,0.08);
+  }
+  .shadow-elevate-lg {
+    box-shadow: 0 14px 40px rgba(41,5,2,0.12), 0 4px 10px rgba(41,5,2,0.10);
+  }
+  /* Subtle inner shadow to imply thickness */
+  .shadow-inner-soft {
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.3), inset 0 -1px 0 rgba(41,5,2,0.08);
+  }
+  /* Slight gradient for paper edge depth */
+  .paper-sheen {
+    background-image: linear-gradient(180deg, rgba(255,255,255,0.75), rgba(255,255,255,0.65));
+  }
+}
+
 /* Editorial utilities */
 @layer utilities {
   .page-max {
@@ -39,4 +61,43 @@
     transition: width .25s ease;
   }
   .underline-cherry:hover::after { width: 100px; }
+
+  /* Global linen/paper grain for cream backgrounds */
+  .texture-cream {
+    position: relative;
+  }
+  .texture-cream::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: .03;
+    mix-blend-mode: multiply;
+    background-image: url("data:image/svg+xml,%3Csvg width='120' height='120' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='table' tableValues='0 0.6'/%3E%3C/feComponentTransfer%3E%3C/feColorMatrix%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* Subtle fabric texture for chocolate sections */
+  .texture-chocolate {
+    position: relative;
+  }
+  .texture-chocolate::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: .03;
+    mix-blend-mode: screen;
+    background-image: url("data:image/svg+xml,%3Csvg width='140' height='140' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.6' numOctaves='2'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/feColorMatrix%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)'/%3E%3C/svg%3E");
+  }
+
+  /* Gentle fade-up entrance */
+  .fade-up {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: opacity .6s ease, transform .6s ease;
+  }
+  .fade-up.in-view {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
