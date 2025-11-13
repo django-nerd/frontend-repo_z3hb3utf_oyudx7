@@ -31,6 +31,35 @@ function useMouseTilt(enabled = true, max = 8) {
   return { ref, rot }
 }
 
+class SplineErrorBoundary extends React.Component {
+  constructor(props){
+    super(props)
+    this.state = { hasError: false }
+  }
+  static getDerivedStateFromError(){
+    return { hasError: true }
+  }
+  componentDidCatch(err){
+    if (import.meta?.env?.MODE === 'development') {
+      // eslint-disable-next-line no-console
+      console.error('Spline error:', err)
+    }
+  }
+  render(){
+    if (this.state.hasError){
+      return (
+        <div className="absolute inset-0 flex items-center justify-center bg-sage/10">
+          <div className="text-center text-chocolate/70 text-sm">
+            <div className="mb-2">3D unavailable</div>
+            <div className="text-xs opacity-70">Rendering gracefully disabled</div>
+          </div>
+        </div>
+      )
+    }
+    return this.props.children
+  }
+}
+
 export default function SplineHero({ scene, className = '' }) {
   const prefersReduced = useReducedMotion()
   const { scrollYProgress } = useScroll()
@@ -67,19 +96,21 @@ export default function SplineHero({ scene, className = '' }) {
   return (
     <motion.div
       ref={ref}
-      style={prefersReduced ? undefined : { y, rotate: r }}
+      style={prefersReduced ? undefined : { y, rotate: r, ...motionStyle }}
       className={`relative rounded-xl shadow-elevate-lg overflow-hidden ${className}`}
       aria-label="Interactive brand sculpture"
     >
       <div className="absolute inset-0 bg-sage/10" />
       {overlay}
-      <Suspense fallback={<div className="absolute inset-0 animate-pulse bg-sage/20" /> }>
-        <LazySpline
-          scene={scene}
-          onLoad={() => setLoaded(true)}
-          style={{ width: '100%', height: '100%' }}
-        />
-      </Suspense>
+      <SplineErrorBoundary>
+        <Suspense fallback={<div className="absolute inset-0 animate-pulse bg-sage/20" /> }>
+          <LazySpline
+            scene={scene}
+            onLoad={() => setLoaded(true)}
+            style={{ width: '100%', height: '100%' }}
+          />
+        </Suspense>
+      </SplineErrorBoundary>
 
       {/* Top glint */}
       <div className="pointer-events-none absolute -top-1 inset-x-0 h-20 bg-gradient-to-b from-white/20 to-transparent" />
